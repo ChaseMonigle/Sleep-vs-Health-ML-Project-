@@ -1,0 +1,14 @@
+feature,importance
+caffeine_intake_mg_per_day,0.130099840470567
+mindfulness_minutes_per_day,0.11688306115503924
+daily_screen_time_hours,0.1129748763773613
+physical_activity_hours_per_week,0.10612734150392483
+sleep_duration_hours,0.10566492444908615
+mental_health_score,0.10416309248918162
+weekly_depression_score,0.08634813568670792
+weekly_anxiety_score,0.08262506233782738
+mood_rating,0.06342469169543863
+stress_level,0.06152238211441186
+uses_wellness_apps,0.015084674389305299
+eats_healthy,0.015081917331148734
+
