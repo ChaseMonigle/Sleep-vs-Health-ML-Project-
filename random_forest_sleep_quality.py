@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -60,8 +61,18 @@ def main() -> None:
 
     df = pd.read_csv(data_path)
 
-    # pick every column except the thing we are trying to predict
-    X = df.drop(columns=[args.target])
+    # plot the original target data before training
+    plt.figure(figsize=(10, 5))
+    plt.plot(df[args.target].values, marker="o", linestyle="-")
+    plt.title(f"Original {args.target} Data")
+    plt.xlabel("Sample Index")
+    plt.ylabel(args.target)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # use every column except the target as input features
+    X = df[['mood_rating', 'stress_level', 'mental_health_score','daily_screen_time_hours']]
     y = df[args.target]
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -76,20 +87,16 @@ def main() -> None:
 
     preds = model.predict(X_test)
 
-    #Mean Squared Error
-    #AKA: Error margin (punishes bigger gaps in prediction)
+    # Mean Squared Error
     mse = mean_squared_error(y_test, preds)
-    
-    #Root Mean Squared Error 
 
-
+    # Root Mean Squared Error
     rmse = mse ** 0.5
 
-    #Mean Absolute Error 
-    #AKA: Average amount prediction is off by
+    # Mean Absolute Error
     mae = mean_absolute_error(y_test, preds)
-    
 
+    # R-squared
     r2 = r2_score(y_test, preds)
 
     importance_df = pd.DataFrame(
@@ -121,11 +128,21 @@ def main() -> None:
     for _, row in importance_df.iterrows():
         print(f"- {row['feature']}: {row['importance']:.4f}")
 
-    #Output
     out_file = data_path.parent / f"{args.target}_Results.csv"
     importance_df.to_csv(out_file, index=False)
     print()
     print(f"Saved feature importances to: {out_file}")
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(y_test.values, label="Actual", marker="o")
+    plt.plot(preds, label="Predicted", marker="x")
+    plt.title(f"Actual vs Predicted: {args.target}")
+    plt.xlabel("Test Sample Index")
+    plt.ylabel(args.target)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
