@@ -1,11 +1,22 @@
 import argparse
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
+
+
+FEATURE_COLUMNS = [
+    "Age",
+    "Sleep Duration",
+    "Physical Activity Level",
+    "Stress Level",
+    "Heart Rate",
+    "Daily Steps",
+]
+
+TARGET_COLUMN = "Quality of Sleep"
 
 
 def build_model(n_estimators: int, random_state: int) -> RandomForestRegressor:
@@ -22,18 +33,12 @@ def build_model(n_estimators: int, random_state: int) -> RandomForestRegressor:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train a random forest model for the sleep ML project."
+        description="Train a random forest model to predict Quality of Sleep."
     )
     parser.add_argument(
         "--data",
-        default="ML_proj_data.csv",
+        default="Sleep_health_and_lifestyle_dataset.csv",
         help="Path to the cleaned CSV file.",
-    )
-    parser.add_argument(
-        "--target",
-        default="sleep_quality",
-        choices=["sleep_quality", "sleep_duration_hours"],
-        help="Column to predict. Default is sleep_quality.",
     )
     parser.add_argument(
         "--test-size",
@@ -61,19 +66,17 @@ def main() -> None:
 
     df = pd.read_csv(data_path)
 
-    # plot the original target data before training
-    plt.figure(figsize=(10, 5))
-    plt.plot(df[args.target].values, marker="o", linestyle="-")
-    plt.title(f"Original {args.target} Data")
-    plt.xlabel("Sample Index")
-    plt.ylabel(args.target)
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    missing_cols = [col for col in FEATURE_COLUMNS + [TARGET_COLUMN] if col not in df.columns]
+    if missing_cols:
+        raise ValueError(f"Missing expected columns: {missing_cols}")
 
-    # use every column except the target as input features
-    X = df[['mood_rating', 'stress_level', 'mental_health_score','daily_screen_time_hours']]
-    y = df[args.target]
+    # keep only the variables you listed
+    X = df[FEATURE_COLUMNS].copy()
+    y = df[TARGET_COLUMN].copy()
+
+    # simple cleanup in case there are blanks
+    X = X.fillna(X.median(numeric_only=True))
+    y = y.fillna(y.median())
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
@@ -87,16 +90,9 @@ def main() -> None:
 
     preds = model.predict(X_test)
 
-    # Mean Squared Error
     mse = mean_squared_error(y_test, preds)
-
-    # Root Mean Squared Error
     rmse = mse ** 0.5
-
-    # Mean Absolute Error
     mae = mean_absolute_error(y_test, preds)
-
-    # R-squared
     r2 = r2_score(y_test, preds)
 
     importance_df = pd.DataFrame(
@@ -107,11 +103,15 @@ def main() -> None:
     ).sort_values("importance", ascending=False)
 
     print("=" * 60)
-    print(f"Random Forest Results for target: {args.target}")
+    print(f"Random Forest Results for target: {TARGET_COLUMN}")
     print("=" * 60)
     print(f"Rows in dataset: {len(df)}")
     print(f"Training rows:   {len(X_train)}")
     print(f"Testing rows:    {len(X_test)}")
+    print()
+    print("Features used")
+    for col in FEATURE_COLUMNS:
+        print(f"- {col}")
     print()
     print("Model settings")
     print(f"- Trees:        {args.trees}")
@@ -124,25 +124,14 @@ def main() -> None:
     print(f"- RMSE:  {rmse:.4f}")
     print(f"- R^2:   {r2:.4f}")
     print()
-    print("Top feature importances")
+    print("Feature importances")
     for _, row in importance_df.iterrows():
         print(f"- {row['feature']}: {row['importance']:.4f}")
 
-    out_file = data_path.parent / f"{args.target}_Results.csv"
+    out_file = data_path.parent / "quality_of_sleep_feature_importances.csv"
     importance_df.to_csv(out_file, index=False)
     print()
     print(f"Saved feature importances to: {out_file}")
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(y_test.values, label="Actual", marker="o")
-    plt.plot(preds, label="Predicted", marker="x")
-    plt.title(f"Actual vs Predicted: {args.target}")
-    plt.xlabel("Test Sample Index")
-    plt.ylabel(args.target)
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
 
 
 if __name__ == "__main__":
