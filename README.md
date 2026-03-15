@@ -1,32 +1,24 @@
 # Sleep-vs-Health-ML-Project-
 
 ### Response Variables
-sleep_duration_hours (numerical): Duration of sleep (in hours)  
-
-sleep_quality (categorical/numerical): Rating from 1-10  
-
+Quality of Sleep: A subjective rating of the quality of sleep, ranging from 1 to 10.    
 
 
 ### Independent Variables/Impactors
-daily_screen_time_hours (numerical): Total screen time per day (in hours)  
+Age: The age of the person in years.      
 
-mood_rating (categorical/numerical) : Rating from 1-10  
+Sleep Duration: The number of hours the person sleeps per day.       
 
-stress_level(categorical/numerical): Rating from 1-10  
+Physical Activity Level: The number of minutes the person engages in physical activity daily.   
 
-physical_activity_hours_per_week (numerical): Total amount of physical activity done per week (in hours)  
+Stress Level: A subjective rating of the stress level experienced by the person, ranging from 1 to 10.        
 
-mental_health_score (categorical/numerical): Rating from 0-100??? Not well defined in dataset, but dataset only includes values between 20-80  
+Heart Rate: The resting heart rate of the person in beats per minute.
+Daily Steps: The number of steps the person takes per day.       
 
-uses_wellness_apps (categorical): Does the individual use a wellness app?  
+Daily Steps: The number of steps the person takes per day.      
 
-eats_healthy (categorical): Does the individual have a healthy diet?  
 
-caffeine_intake_mg_per_day (numerical): The amount of caffeine consumed per day (in mg)  
 
-weekly_anxiety_score (categorical/numerical): Rating from 0-20   
 
-weekly_depression_score (categorical/numerical): Rating from 0-20   
-
-mindfulness_minutes_per_day (numerical): The amount of time put aside to practice mindfullness per day (in minutes)   
 
