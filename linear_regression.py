@@ -3,36 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
 df = pd.read_csv("ML_proj_data.csv")
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Compute correlation matrix
-corr_matrix = df.corr()
-
-# Plot full heatmap
-plt.figure(figsize=(12, 8))
-sns.heatmap(
-    corr_matrix,
-    annot=True,
-    cmap="coolwarm",
-    fmt=".2f",
-    linewidths=0.5
-)
-
-plt.title("Correlation Heatmap - Sleep vs Health Dataset")
-plt.xticks(rotation=45)
-plt.yticks(rotation=0)
-plt.tight_layout()
-plt.show()
-
-# Print correlations with target (VERY IMPORTANT)
-corr_target = corr_matrix["sleep_quality"].sort_values(ascending=False)
-
-print("\nCorrelation with sleep_quality:\n")
-print(corr_target)target = df[["sleep_quality"]]
+target = df[["sleep_quality"]]
 
 predictors = df[["daily_screen_time_hours", "sleep_duration_hours", "mood_rating", "stress_level", "physical_activity_hours_per_week", 
 "mental_health_score", "caffeine_intake_mg_per_day", "weekly_anxiety_score", "mindfulness_minutes_per_day", "weekly_depression_score"]]
@@ -65,8 +39,8 @@ def multiple(target, predictors):
     y = target.values
 
     #correlation check
-    corr = X.corr()
-    print("\nCorrelation Matrix:\n", corr)
+    #corr = X.corr()
+    #print("\nCorrelation Matrix:\n", corr)
 
     # OPTIONAL: drop highly correlated features
    
@@ -93,12 +67,22 @@ def multiple(target, predictors):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    
+    mse = mean_squared_error(y_test, y_pred)
+
+    print("----Tuned OLS Performance Metrics----")
     print("R2:", r2_score(y_test, y_pred))
+    print("MSE:", mse)
+    print("MAE:", mean_absolute_error(y_test, y_pred))
+    print("RMSE:", np.sqrt(mse))
     print("Predictions summary:")
     print("Min:", np.min(y_pred))
     print("Max:", np.max(y_pred))
     print("Unique values:", len(np.unique(np.round(y_pred, 3))))
+    n = len(y)  # number of observations
+    k = 10  # number of predictors [^1^]
+    adjusted_r_squared = 1 - (1 - r2_score(y_test, y_pred)) * (n - 1) / (n - k - 1)
+    print("Adjusted R-squared:", adjusted_r_squared)
+    
    
     # predicted vs. actual
     plt.figure()
@@ -108,7 +92,7 @@ def multiple(target, predictors):
              linestyle='--')
     plt.xlabel("Actual")
     plt.ylabel("Predicted")
-    plt.title("Predicted vs Actual")
+    plt.title("Tuned OLS Regression: Predicted vs Actual")
     plt.show()
 
     #residual plot
@@ -118,7 +102,7 @@ def multiple(target, predictors):
     plt.scatter(y_pred, residuals)
     plt.axhline(y=0, linestyle='--')
     plt.xlabel("Predicted")
-    plt.ylabel("Residuals")
+    plt.ylabel("Residuals (Actual - Predicted)")
     plt.title("Residual Plot")
     plt.show()
 
@@ -131,7 +115,71 @@ def multiple(target, predictors):
     plt.show()
 
     
+def untuned_multiple(target, predictors):
+    X = predictors.copy()
+    y = target.values
 
+    #correlation check
+    #corr = X.corr()
+    #print("\nCorrelation Matrix:\n", corr)
+
+    # OPTIONAL: drop highly correlated features
+   
+   #convert to numpy
+    X = X.values
+
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.4, random_state=42
+    )
+    print(len(y_test))
+    print(len(X_test))
+    model = OrdinaryLeastSquares()
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    print("----Untuned OLS Performance Metrics----")
+    print("R2:", r2_score(y_test, y_pred))
+    print("MSE:", mse)
+    print("MAE:", mean_absolute_error(y_test, y_pred))
+    print("RMSE:", np.sqrt(mse))
+    print("Predictions summary:")
+    print("Min:", np.min(y_pred))
+    print("Max:", np.max(y_pred))
+    print("Unique values:", len(np.unique(np.round(y_pred, 3))))
+    
+    
+   
+    # predicted vs. actual
+    plt.figure()
+    plt.scatter(y_test, y_pred)
+    plt.plot([y_test.min(), y_test.max()],
+             [y_test.min(), y_test.max()],
+             linestyle='--')
+    plt.xlabel("Actual")
+    plt.ylabel("Predicted")
+    plt.title("Untuned OLS Regression: Predicted vs Actual")
+    plt.show()
+
+    #residual plot
+    residuals = y_test - y_pred
+
+    plt.figure()
+    plt.scatter(y_pred, residuals)
+    plt.axhline(y=0, linestyle='--')
+    plt.xlabel("Predicted")
+    plt.ylabel("Residuals (Actual - Predicted)")
+    plt.title("Residual Plot")
+    plt.show()
+
+    # residual distribution
+    plt.figure()
+    plt.hist(residuals, bins=20)
+    plt.title("Residual Distribution")
+    plt.xlabel("Residual")
+    plt.ylabel("Frequency")
+    plt.show()
 
 
 
@@ -174,6 +222,6 @@ def one_at_a_time(target, predictors):
     print(results_df)
 
 
-
+untuned_multiple(target, predictors)
 multiple(target, predictors)
 
