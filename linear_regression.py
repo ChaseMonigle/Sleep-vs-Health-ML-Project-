@@ -6,7 +6,33 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 
 df = pd.read_csv("ML_proj_data.csv")
-target = df[["sleep_quality"]]
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Compute correlation matrix
+corr_matrix = df.corr()
+
+# Plot full heatmap
+plt.figure(figsize=(12, 8))
+sns.heatmap(
+    corr_matrix,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    linewidths=0.5
+)
+
+plt.title("Correlation Heatmap - Sleep vs Health Dataset")
+plt.xticks(rotation=45)
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+# Print correlations with target (VERY IMPORTANT)
+corr_target = corr_matrix["sleep_quality"].sort_values(ascending=False)
+
+print("\nCorrelation with sleep_quality:\n")
+print(corr_target)target = df[["sleep_quality"]]
 
 predictors = df[["daily_screen_time_hours", "sleep_duration_hours", "mood_rating", "stress_level", "physical_activity_hours_per_week", 
 "mental_health_score", "caffeine_intake_mg_per_day", "weekly_anxiety_score", "mindfulness_minutes_per_day", "weekly_depression_score"]]
